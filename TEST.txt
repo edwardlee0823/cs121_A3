@@ -1,0 +1,34 @@
+COMPSCI 121 Assignment 3: M3 (Group #35) by Edward Lee and Richard Lee
+
+List of 20 queries - 
+Below 10 queries are good queries: 
+1. iftekhar ahmed
+2. machine learning
+3. ACM
+4. master of software engineering
+5. artificial intelligence
+6. deep learning
+7. University of California Irvine
+8. computer science
+9. neural science
+10. graduate programs
+
+Below 10 queries are poorly performed queries (also how we fixed them): 
+11. AI
+12. ML
+13. CS
+Above queries are too short and since they are abbreviations, they might catch too many documents. Using weights on different HTML tags
+have better the search result and performance.
+14. what is the best thing of AI
+15. how does machine learning affect the human
+16. what is the benefit of coding
+Above queries contain a lot of stop words and therefore causes irrelevant search results. We have also fixed this issue by increasing
+weight on more important terms and not prioritizing the stop words.
+17. how to use machine learning to scrape data with the use of artificial intelligence
+18. the benefit of using neural networks to find the best data in terms of machine learning
+Both queries above are too long and may contain too much content for the search to generate. We partitioned the index more concisely so that
+we only load relevant sections to speed up the search time.
+19. master's of software engineering
+20. state-of-the-art in neural links
+These queries above initially performed poor due to the usage of marks like apostrophe and hypens. And to fix this issue, we utilized better
+tokenization to cut out unnecessary parts.

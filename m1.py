@@ -3,6 +3,7 @@ import json
 import re
 import shutil
 import math
+import time
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 
@@ -25,7 +26,7 @@ stemmer = PorterStemmer()
 inverted_index = {}  # format - {"token": {"doc_id": freq}}
 doc_count = 0
 doc_map = {}
-temp_mem = 5000
+temp_mem = 15000
 idf_values = {}
 
 def extraction(html):
@@ -121,8 +122,9 @@ for file in partial_index_files:
                 final_index[token][doc_id] += freq
 
 # Computing and storing IDF values.
-for token in final_index:
-    idf_values[token] = math.log(doc_count / (1 + len(final_index[token])))
+for token, posting in final_index.items():
+    df = len(posting)
+    idf_values[token] = math.log(doc_count / df) if df > 0 else 0
 
 with open(FINAL_INDEX_FILE, "w", encoding="utf-8") as f:
     json.dump(final_index, f, indent=4)
@@ -170,8 +172,21 @@ def search(query, index, idf_values, doc_map):
             return [], doc_map
 
     # Computing TF-IDF scores
-    scores = {doc_id: sum((index[token].get(str(doc_id), 0) * idf_values.get(token, 0)) ** 2 for token in tokens) ** 0.5 
-              for doc_id in relevant_docs}
+    scores = {}
+
+    for doc_id in relevant_docs:
+        total_score = 0
+        sum_of_squares = 0
+        for token in tokens:
+            raw_tf = index[token].get(str(doc_id), 0)
+            if raw_tf > 0:
+                tf = 1 + math.log(raw_tf)
+                idf = idf_values.get(token, 0)
+                weighted_tf = tf * idf
+                total_score += weighted_tf
+                sum_of_squares += weighted_tf ** 2
+        doc_length = math.sqrt(sum_of_squares)
+        scores[doc_id] = total_score / doc_length if doc_length > 0 else 0
 
     ranked_docs = sorted(scores, key=scores.get, reverse=True)[:5]
     return ranked_docs, doc_map
@@ -184,8 +199,16 @@ def search_interface():
         query = input("Enter search query (or type 'exit' to quit): ").strip()
         if query.lower() == "exit":
             break
-        
-        results, doc_map = search(query, index, idf_values, doc_map)
+            
+        if not query:
+            print("ERROR: Query cannot be empty. Please enter a valid search term.")
+            continue
+
+        start_time = time.time()
+        results, _ = search(query, index, idf_values, doc_map)
+        elapsed_time = (time.time() - start_time) * 1000
+
+        print(f"Search completed in {elapsed_time:.2f}ms")
         if not results:
             print("No results found.")
         else:
